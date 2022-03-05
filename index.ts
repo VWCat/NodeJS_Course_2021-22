@@ -11,7 +11,7 @@ const prompt = require("prompt-sync")();
 
 // const fs = require("fs");
 // const main = async () => {
-//   const buf = await fs.promises.readFile("./qwestions.txt");
+//   const buf = await fs.promises.readFile("./assets/txt/qwestions.txt");
 //   //   console.log(buf.toString());
 //   const arrQwestionsAll = buf.toString().split("++++\n");
 //   arrQwestionsAll.pop(arrQwestionsAll.length);

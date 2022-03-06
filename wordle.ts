@@ -4,17 +4,20 @@ import fs from "fs";
 
 const prompt = promptSync({ sigint: true });
 
-enum COL {
+enum TXT {
   RESET = "\x1b[0m",
-  CYAN = "\x1b[36m",
-  GREEN = "\x1b[32m",
-  YELLOW = "\x1b[33m",
+  CYAN = "\x1b[38;5;159;1m",
+  GREEN = "\x1b[32;1m",
+  YELLOW = "\x1b[33;1m",
+  CROSSGRAY = "\x1b[38;5;245;9m",
+  RED = "\x1b[31m",
 }
 
 export const wordle = async (): Promise<void> => {
-  const buf = await fs.promises.readFile("./assets/txt/dictionary_test.txt");
-  const abc = await fs.promises.readFile("./assets/txt/alphabet.txt");
+  let buf = await fs.promises.readFile("./assets/txt/dictionary_noun.txt");
   const dic = new Set(buf.toString().split("\n"));
+  buf = await fs.promises.readFile("./assets/txt/alphabet.txt");
+  const abc = buf.toString().split("").join(" ");
   const usedLetters = {
     truePos: new Set() as Set<string>,
     wrongPos: new Set() as Set<string>,
@@ -22,16 +25,19 @@ export const wordle = async (): Promise<void> => {
   };
   let userWord: string;
   let userWords: string = "";
+  let userAbc: string = "";
+  let tries = 7;
 
   const trueWord = Array.from(dic.values())[
     Math.floor(Math.random() * dic.size)
   ];
 
-  console.log(dic.size, trueWord);
+  console.clear();
+  console.log("Попробуйте угадать слово из пяти букв!");
 
-  while (true) {
+  while (tries) {
     while (!dic.has((userWord = prompt("Введите своё слово: ")))) {
-      console.log("\x1b[31m%s\x1b[0m", "Нет такого слова!!!");
+      console.log(TXT.RED, "Нет такого слова!!!", TXT.RESET);
     }
 
     userWord
@@ -39,49 +45,51 @@ export const wordle = async (): Promise<void> => {
       .split("")
       .forEach((letter, pos) => {
         if (letter === trueWord[pos].toUpperCase()) {
-          userWords += COL.GREEN + letter + COL.RESET;
+          userWords += TXT.GREEN + letter + TXT.RESET + " ";
           usedLetters.truePos.add(letter);
         } else if (trueWord.toUpperCase().includes(letter)) {
-          userWords += COL.YELLOW + letter + COL.RESET;
+          userWords += TXT.YELLOW + letter + TXT.RESET + " ";
           usedLetters.wrongPos.add(letter);
         } else {
-          userWords += letter;
+          userWords += letter + " ";
           usedLetters.used.add(letter);
         }
       });
 
     userWords += "\n";
 
+    userAbc = abc
+      .split("")
+      .map((letter) => {
+        if (usedLetters.truePos.has(letter)) {
+          return TXT.GREEN + letter + TXT.RESET;
+        } else if (usedLetters.wrongPos.has(letter)) {
+          return TXT.YELLOW + letter + TXT.RESET;
+        } else if (usedLetters.used.has(letter)) {
+          return TXT.CROSSGRAY + letter + TXT.RESET;
+        } else {
+          return TXT.CYAN + letter + TXT.RESET;
+        }
+      })
+      .join("");
+
+    console.clear();
+    console.log(userAbc);
     console.log(userWords);
 
     if (str.checkWin(userWord, trueWord)) break;
-    console.log(
-      "Буквы на своих местах: ",
-      str.findCorrectPos(userWord, trueWord)
-    );
-    console.log(
-      "Угаданные буквы: ",
-      str.findCorrectLetters(userWord, trueWord)
-    );
+    tries -= 1;
   }
-  console.log("\x1b[30m%s\x1b[0m", "I am cyan");
-  console.log("\x1b[31m%s\x1b[0m", "I am cyan");
-  console.log("\x1b[32m%s\x1b[0m", "I am cyan");
-  console.log("\x1b[33m%s\x1b[0m", "I am cyan");
-  console.log("\x1b[34m%s\x1b[0m", "I am cyan");
-  console.log("\x1b[35m%s\x1b[0m", "I am cyan");
-  console.log("\x1b[36m%s\x1b[0m", "I am cyan");
-  console.log("\x1b[37m%s\x1b[0m", "I am cyan");
-  console.log("\x1b[38m%s\x1b[0m", "I am cyan");
-  console.log("\x1b[39m%s\x1b[0m", "I am cyan");
-  //
 
-  // let userWord = prompt("Введите своё слово: ").trim();
-
-  // while (!str.checkWin(userWord, trueWord)) {
-  //   console.log("Вы не угадали, попробуйте ещё раз!");
-
-  //   userWord = prompt("Введите своё слово: ");
-  // }
-  // console.log("Поздравляю!");
+  if (tries)
+    console.log(
+      "Поздравляем!!! Вы угадали!!!"
+        .split("")
+        .map(
+          (letter) =>
+            "\x1b[38;5;" + Math.floor(17 + Math.random() * 215) + ";1m" + letter
+        )
+        .join(" ")
+    );
+  else console.log("Вы проиграли. Исчерпаны все 7 попыток.");
 };

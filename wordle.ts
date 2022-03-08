@@ -13,7 +13,7 @@ enum TXT {
   RED = "\x1b[31m",
 }
 
-export const wordle = async (): Promise<void> => {
+const wordle = async (): Promise<void> => {
   let buf = await fs.promises.readFile("./assets/txt/dictionary_noun.txt");
   const dic = new Set(buf.toString().split("\n"));
   buf = await fs.promises.readFile("./assets/txt/alphabet.txt");
@@ -93,3 +93,5 @@ export const wordle = async (): Promise<void> => {
     );
   else console.log("Вы проиграли. Исчерпаны все 7 попыток.");
 };
+
+export default wordle;
